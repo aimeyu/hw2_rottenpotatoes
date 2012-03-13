@@ -7,8 +7,17 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.order(params[:sort])
     @current_column = params[:sort]
+    @orderedMovies = Movie.order(@current_column)
+    @all_ratings = ['G', 'PG', 'PG-13','R']
+    @checked = params[:ratings]
+    if @checked.nil?
+      @movies = @orderedMovies
+    else
+      @ratings = @checked.keys
+      @movies = @orderedMovies.find(:all, :conditions => {:rating=> @ratings})
+    end
+
   end
 
   def new
