@@ -7,17 +7,69 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @current_column = params[:sort]
-    @orderedMovies = Movie.order(@current_column)
-    @all_ratings = ['G', 'PG', 'PG-13','R']
-    @checked = params[:ratings]
-    if @checked.nil?
-      @movies = @orderedMovies
-    else
-      @ratings = @checked.keys
-      @movies = @orderedMovies.find(:all, :conditions => {:rating=> @ratings})
-    end
+    @all_movies = Movie.all
+    @all_ratings = ['G','PG','PG-13','R']
+    @movie = display_selected(@all_movies)
+  end
 
+  def sort_movies(movies)
+    if params[:sort] == "title"
+      movies.sort_by{|movie| movie.title}
+    elsif params[:sort] == "release_date"
+      movies.sort_by{|movie| movie.release_date}
+    end
+  end
+
+  def only_include(movies)
+    #Movie.find(:all, :conditions => {:rating=> keys})
+    #{"utf8"=>"✓", "ratings"=>{"G"=>"1", "PG"=>"1", "R"=>"1"}, "commit"=>"Refresh", "action"=>"index", "controller"=>"movies"}
+
+    @keys = params[:ratings].keys
+    @keys.each do |key|
+      if @included_movies.nil?
+        @included_movies = movies.find_all{|movie| movie.rating == key}
+      else
+        @included_movies.concat(movies.find_all{|movie| movie.rating == key})
+      end
+    end
+    @included_movies
+  end
+
+  def display_selected(movies)
+    @ratings = params[:ratings]
+    @current_column = params[:sort]
+    checked
+
+    if @ratings.present? && @current_column.nil?
+      only_include(movies)
+    elsif @ratings.present? && @current_column.present?
+      sort_movies(only_include(movies))
+    elsif @ratings.nil? && @current_column.present?
+      sort_movies(movies)
+    else
+      movies
+    end
+  end
+
+  def checked
+    @checked = {}
+    #if @checked = {}
+    #  ?utf8=✓&ratings[G]=1&commit=Refresh
+    #end
+    if params[:ratings]
+      @selected = params[:ratings].keys & @all_ratings
+      @unselected = @all_ratings - @selected
+      @selected.each do |selected|
+        @checked[selected] = true
+      end
+      @unselected.each do |unselected|
+        @checked[unselected] = false
+      end
+    else
+      @all_ratings.each do |unselected|
+        @checked[unselected] = false
+      end
+    end
   end
 
   def new
