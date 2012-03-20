@@ -15,15 +15,12 @@
   %thead
     %tr
       %th{:class => @current_column == "title" ? 'hilite' : nil}
-        - params[:sort] = "title"
-        =link_to "Movie Title", params, :id =>"title_header"
+        =link_to "Movie Title", {:sort=>"title"}.merge(params), :id => "title_header"
       %th Rating
       %th{:class => @current_column == "release_date" ? 'hilite' : nil}
-        - params[:sort] = "release_date"
-        =link_to "Release Date", params, :id => "release_date_header"
+        =link_to "Release Date", {:sort=>"release_date"}.merge(params), :id => "release_date_header"
       %th More Info
   %tbody
-
     - @movie.each do |movie|
       %tr
         %td= movie.title 

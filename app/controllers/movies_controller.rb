@@ -14,16 +14,18 @@ class MoviesController < ApplicationController
 
   def sort_movies(movies)
     if params[:sort] == "title"
+      session[:params][:sort] = "title"
       movies.sort_by{|movie| movie.title}
     elsif params[:sort] == "release_date"
+      session[:params][:sort] = "release_date"
       movies.sort_by{|movie| movie.release_date}
+    else
+      session[:params] = params
     end
   end
 
   def only_include(movies)
-    #Movie.find(:all, :conditions => {:rating=> keys})
-    #{"utf8"=>"✓", "ratings"=>{"G"=>"1", "PG"=>"1", "R"=>"1"}, "commit"=>"Refresh", "action"=>"index", "controller"=>"movies"}
-
+    session[:params][:ratings] = params[:ratings]
     @keys = params[:ratings].keys
     @keys.each do |key|
       if @included_movies.nil?
@@ -35,7 +37,20 @@ class MoviesController < ApplicationController
     @included_movies
   end
 
+  def store_session
+    if session[:params].nil?
+        session[:params]=params
+    end
+
+    if params == {"action"=>"index", "controller"=>"movies"}
+      self.params = session[:params]
+    else
+      puts "params is not equal to session"
+    end
+  end
+
   def display_selected(movies)
+    store_session
     @ratings = params[:ratings]
     @current_column = params[:sort]
     checked
@@ -49,13 +64,11 @@ class MoviesController < ApplicationController
     else
       movies
     end
+
   end
 
   def checked
     @checked = {}
-    #if @checked = {}
-    #  ?utf8=✓&ratings[G]=1&commit=Refresh
-    #end
     if params[:ratings]
       @selected = params[:ratings].keys & @all_ratings
       @unselected = @all_ratings - @selected

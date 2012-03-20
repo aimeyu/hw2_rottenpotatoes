@@ -8,7 +8,7 @@ class Movie < ActiveRecord::Base
   end
 
   def current_column
-     @current_column = params[:sort]
+    @current_column = params[:sort]
   end
 
   def ratings
